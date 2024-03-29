@@ -28,10 +28,11 @@ namespace JellyJamMadness.Patches
         public static bool isStarting = true;
 
         public static PlayerInfoSize infoScript;
+        public static Rigidbody playerRigidbody;
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix] // Pre-fix is done before the actual game code
-        public static void UpdatePatch(ref float ___sprintMeter, ref Transform ___thisPlayerBody, ref float ___movementSpeed, ref float ___jumpForce, ref float ___grabDistance, ref Transform ___localVisor, PlayerControllerB __instance, ref bool ___inTerminalMenu)
+        public static void UpdatePatch(ref float ___sprintMeter, ref Transform ___thisPlayerBody, ref float ___movementSpeed, ref float ___jumpForce, ref float ___grabDistance, ref Transform ___localVisor, PlayerControllerB __instance, ref bool ___inTerminalMenu, ref bool ___isPlayerDead)
         {
             // Run all of these at the start
 
@@ -46,13 +47,13 @@ namespace JellyJamMadness.Patches
                 // Add the script to the player
                 Debug.Log("Starting the Tiny Mod...");
 
-                infoScript = new PlayerInfoSize();
-                player.AddComponent<PlayerInfoSize>();
+                //infoScript = new PlayerInfoSize();
+                //player.AddComponent<PlayerInfoSize>();
 
-                if (player.GetComponent<PlayerInfoSize>())
-                {
-                    Debug.Log("MOD FOUND");
-                }
+                //if (player.GetComponent<PlayerInfoSize>())
+                //{
+                //    Debug.Log("MOD FOUND");
+                //}
 
                 // Assign base values
                 infoScript.baseGrab = ___grabDistance;
@@ -81,21 +82,53 @@ namespace JellyJamMadness.Patches
                 infoScript.UpdateSize();
             }
 
+            if (infoScript.isSmall)
+            {
+                // Apply our own gravity when small
+                playerRigidbody.AddForce(Physics.gravity * 0.75f, ForceMode.Acceleration);
+            }
 
+
+            // Remove spawn timer to prevent getting stuck when spawned in
+            if (infoScript.spawnTimer >= 0 && !___isPlayerDead)
+            {
+                infoScript.spawnTimer -= Time.deltaTime;
+                infoScript.UpdateSize();
+            }
+
+            // Refresh spawn timer if player is dead
+            if (___isPlayerDead && infoScript.spawnTimer != 5)
+            {
+                infoScript.spawnTimer = 5f;
+            }
 
 
         }
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
-        public static void NewStart(ref float ___sprintMeter, ref Transform ___thisPlayerBody, ref float ___movementSpeed, ref float ___jumpForce, ref float ___grabDistance, ref Transform ___localVisor, PlayerControllerB __instance, ref bool ___inTerminalMenu)
+        public static void NewStart(ref float ___sprintMeter, ref Transform ___thisPlayerBody, ref float ___movementSpeed, ref float ___jumpForce, ref float ___grabDistance, ref Transform ___localVisor, PlayerControllerB __instance, ref bool ___inTerminalMenu, ref Rigidbody ___playerRigidbody)
         {
             if (__instance.gameObject.AddComponent<PlayerInfoSize>() == null)
             {
                 __instance.gameObject.AddComponent<PlayerInfoSize>();
             }
-            PlayerInfoSize infoScript = __instance.gameObject.GetComponent<PlayerInfoSize>();
+
+            if (player == null)
+            {
+                player = ___thisPlayerBody.gameObject;
+            }
+
+            infoScript = __instance.gameObject.GetComponent<PlayerInfoSize>();
+
+            playerRigidbody = player.GetComponent<Rigidbody>();
 
             infoScript.IsSmall(true);
+
+            infoScript.spawnTimer = 5f;
+
+
+
+            player.transform.localScale = new Vector3(1f, 1f, 1f);
 
             HUDManager.Instance.DisplayTip("JellyJam Tiny Mod:", "Do /size to toggle being small!");
         }
@@ -106,15 +139,13 @@ namespace JellyJamMadness.Patches
         public bool isSmall = true;
         public float baseSpeed, baseJump, baseSize, baseGrab;
         private bool hasSetStats = false;
+        public float spawnTimer = 1.5f;
 
         public void ChangeSize()
         {
             GameObject player = this.gameObject;
 
             PlayerControllerB playerScript = player.GetComponent<PlayerControllerB>();
-
-
-
 
             isSmall = !isSmall;
             UpdateSize();
@@ -134,6 +165,10 @@ namespace JellyJamMadness.Patches
 
             PlayerControllerB playerScript = player.GetComponent<PlayerControllerB>();
 
+            Rigidbody rb = player.GetComponent<Rigidbody>();
+
+            if (spawnTimer > 0) { return; }
+
             if (!hasSetStats)
             {
                 baseSpeed = playerScript.movementSpeed;
@@ -146,10 +181,11 @@ namespace JellyJamMadness.Patches
 
             if (isSmall)
             {
-                player.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
-                playerScript.movementSpeed = 2.5f;
-                playerScript.jumpForce = 7;
+                player.transform.localScale = new Vector3(0.33f, 0.33f, 0.33f);
+                playerScript.movementSpeed = 2.7f;
+                playerScript.jumpForce = 8;
                 playerScript.grabDistance = 1f;
+                rb.useGravity = false; // We are going to use our own gravity
             }
             else
             {
@@ -157,6 +193,8 @@ namespace JellyJamMadness.Patches
                 playerScript.movementSpeed = baseSpeed;
                 playerScript.jumpForce = baseJump;
                 playerScript.grabDistance = baseGrab;
+                rb.useGravity = true;
+                
             }
         }
     }
