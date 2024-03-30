@@ -12,9 +12,9 @@ namespace JellyJamMadness
     [BepInPlugin(modGUID, modName, modVersion)]
     public class ModBase : BaseUnityPlugin
     {
-        private const string modGUID = "JellyJam.MadnessMod";
-        private const string modName = "JellyJamMadness Mod";
-        private const string modVersion = "1.0.0.0";
+        private const string modGUID = "JellyJam.TinyMod";
+        private const string modName = "JellyJamTinyMod";
+        private const string modVersion = "1.0.2.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -31,7 +31,7 @@ namespace JellyJamMadness
 
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
 
-            mls.LogInfo("The JellyJam mod has started");
+            mls.LogInfo("The JellyJamTinyMod has started");
 
             harmony.PatchAll();
         }

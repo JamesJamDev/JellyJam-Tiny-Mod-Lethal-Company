@@ -15,6 +15,15 @@ namespace JellyJamMadness.Patches
     [HarmonyPatch(typeof(HUDManager))]
     public class MyInputClass
     {
+        public static void EndChat(HUDManager __instance)
+        {
+            __instance.localPlayer = GameNetworkManager.Instance.localPlayerController;
+            __instance.localPlayer.isTypingChat = false;
+            __instance.chatTextField.text = "";
+            EventSystem.current.SetSelectedGameObject(null);
+            __instance.typingIndicator.enabled = false;
+        }
+
         [HarmonyPatch("SubmitChat_performed")]
         [HarmonyPrefix]
         public static bool SubmitChat_performed_Prefix(HUDManager __instance)
@@ -25,28 +34,45 @@ namespace JellyJamMadness.Patches
 
             if (!PlayerControllerBPatch.inTerminal && text.StartsWith("/"))
             {
+                if (__instance.localPlayer.gameObject.AddComponent<PlayerInfoSize>() == null)
+                {
+                    __instance.localPlayer.gameObject.AddComponent<PlayerInfoSize>();
+                }
+                PlayerInfoSize infoScript = __instance.localPlayer.gameObject.GetComponent<PlayerInfoSize>();
+
                 Debug.Log($"{text} - Input");
                 if (text.StartsWith("/size"))
                 {
-                    if (__instance.localPlayer.gameObject.AddComponent<PlayerInfoSize>() == null)
-                    {
-                        __instance.localPlayer.gameObject.AddComponent<PlayerInfoSize>();
-                    }
-                    PlayerInfoSize infoScript = __instance.localPlayer.gameObject.GetComponent<PlayerInfoSize>();
 
                     infoScript.ChangeSize();
 
 
                     Debug.Log("Attempting to Change Size");
                     HUDManager.Instance.DisplayTip("Size Changed.", "Please note: This is currently only client side. Others will still see you as tiny");
-                    __instance.localPlayer = GameNetworkManager.Instance.localPlayerController;
-                    __instance.localPlayer.isTypingChat = false;
-                    __instance.chatTextField.text = "";
-                    EventSystem.current.SetSelectedGameObject(null);
-                    __instance.typingIndicator.enabled = false;
+                    EndChat(__instance);
+                }
+
+                if (text.StartsWith("/speed"))
+                {
+                    infoScript.useSmallSpeed = !infoScript.useSmallSpeed;
+
+                    infoScript.UpdateSize();
+
+
+                    Debug.Log("Attempting to Change Speed");
+
+                    if (infoScript.useSmallSpeed)
+                    {
+                        HUDManager.Instance.DisplayTip("Stats Changed", "You now use the Tiny modifiers when Tiny");
+                    }
+                    else
+                    {
+                        HUDManager.Instance.DisplayTip("Stats Changed", "You now use the normal modifiers when Tiny");
+                    }
+                    EndChat(__instance);
+ 
                 }
             }
-            //__instance.ChatMessageHistory.Add();
 
             return true;
         }

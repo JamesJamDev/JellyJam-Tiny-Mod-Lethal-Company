@@ -43,17 +43,8 @@ namespace JellyJamMadness.Patches
                     player = ___thisPlayerBody.gameObject;
                 }
 
-
                 // Add the script to the player
                 Debug.Log("Starting the Tiny Mod...");
-
-                //infoScript = new PlayerInfoSize();
-                //player.AddComponent<PlayerInfoSize>();
-
-                //if (player.GetComponent<PlayerInfoSize>())
-                //{
-                //    Debug.Log("MOD FOUND");
-                //}
 
                 // Assign base values
                 infoScript.baseGrab = ___grabDistance;
@@ -71,6 +62,7 @@ namespace JellyJamMadness.Patches
             // Disable the visor
             __instance.localVisor.gameObject.SetActive(false);
 
+            // Make player normal size when in terminal
             if (___inTerminalMenu == true)
             {
                 ___thisPlayerBody.localScale = new Vector3(1f, 1f, 1f);
@@ -137,6 +129,7 @@ namespace JellyJamMadness.Patches
     public class PlayerInfoSize : MonoBehaviour
     {
         public bool isSmall = true;
+        public bool useSmallSpeed = true;
         public float baseSpeed, baseJump, baseSize, baseGrab;
         private bool hasSetStats = false;
         public float spawnTimer = 1.5f;
@@ -179,13 +172,21 @@ namespace JellyJamMadness.Patches
                 hasSetStats = true;
             }
 
-            if (isSmall)
+            if (isSmall && useSmallSpeed)
             {
                 player.transform.localScale = new Vector3(0.33f, 0.33f, 0.33f);
                 playerScript.movementSpeed = 2.7f;
                 playerScript.jumpForce = 8;
                 playerScript.grabDistance = 1f;
                 rb.useGravity = false; // We are going to use our own gravity
+            }
+            else if (isSmall && !useSmallSpeed)
+            {
+                player.transform.localScale = new Vector3(0.33f, 0.33f, 0.33f);
+                playerScript.movementSpeed = baseSpeed;
+                playerScript.jumpForce = baseJump;
+                playerScript.grabDistance = baseGrab;
+                rb.useGravity = true;
             }
             else
             {

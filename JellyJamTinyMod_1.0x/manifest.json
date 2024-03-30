@@ -1,0 +1,9 @@
+{
+    "name": "Tiny_Company",
+    "version_number": "1.0.2",
+    "website_url": "https://discord.gg/9sPBjEDsJq",
+    "description": "A mod that makes your player tiny and changes how you interact with the world and enemies",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100"
+    ]
+}
