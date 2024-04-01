@@ -23,7 +23,6 @@ namespace JellyJamMadness.Patches
         public static Vector3 savedPos = Vector3.zero;
         public static GameObject managerObject;
         public static Vector3 visorScale;
-        public static GameObject player;
         public static bool inTerminal;
         public static bool isStarting = true;
 
@@ -38,10 +37,6 @@ namespace JellyJamMadness.Patches
 
             if (isStarting)
             {
-                if (player == null)
-                {
-                    player = ___thisPlayerBody.gameObject;
-                }
 
                 // Add the script to the player
                 Debug.Log("Starting the Tiny Mod...");
@@ -66,6 +61,7 @@ namespace JellyJamMadness.Patches
             if (___inTerminalMenu == true)
             {
                 ___thisPlayerBody.localScale = new Vector3(1f, 1f, 1f);
+                Debug.Log("IN TERMINAL");
             }
             else
             {
@@ -74,24 +70,10 @@ namespace JellyJamMadness.Patches
                 infoScript.UpdateSize();
             }
 
-            if (infoScript.isSmall)
+            if (infoScript.GetSize())
             {
                 // Apply our own gravity when small
                 playerRigidbody.AddForce(Physics.gravity * 0.75f, ForceMode.Acceleration);
-            }
-
-
-            // Remove spawn timer to prevent getting stuck when spawned in
-            if (infoScript.spawnTimer >= 0 && !___isPlayerDead)
-            {
-                infoScript.spawnTimer -= Time.deltaTime;
-                infoScript.UpdateSize();
-            }
-
-            // Refresh spawn timer if player is dead
-            if (___isPlayerDead && infoScript.spawnTimer != 5)
-            {
-                infoScript.spawnTimer = 5f;
             }
 
 
@@ -100,27 +82,21 @@ namespace JellyJamMadness.Patches
         [HarmonyPostfix]
         public static void NewStart(ref float ___sprintMeter, ref Transform ___thisPlayerBody, ref float ___movementSpeed, ref float ___jumpForce, ref float ___grabDistance, ref Transform ___localVisor, PlayerControllerB __instance, ref bool ___inTerminalMenu, ref Rigidbody ___playerRigidbody)
         {
-            if (__instance.gameObject.AddComponent<PlayerInfoSize>() == null)
+            if (__instance.gameObject.GetComponent<PlayerInfoSize>() == null)
             {
                 __instance.gameObject.AddComponent<PlayerInfoSize>();
             }
 
-            if (player == null)
-            {
-                player = ___thisPlayerBody.gameObject;
-            }
+            GameObject _player = ___thisPlayerBody.gameObject;
 
             infoScript = __instance.gameObject.GetComponent<PlayerInfoSize>();
 
-            playerRigidbody = player.GetComponent<Rigidbody>();
+            playerRigidbody = _player.GetComponent<Rigidbody>();
 
             infoScript.IsSmall(true);
 
-            infoScript.spawnTimer = 5f;
 
 
-
-            player.transform.localScale = new Vector3(1f, 1f, 1f);
 
             HUDManager.Instance.DisplayTip("JellyJam Tiny Mod:", "Do /size to toggle being small!");
         }
@@ -128,39 +104,41 @@ namespace JellyJamMadness.Patches
 
     public class PlayerInfoSize : MonoBehaviour
     {
-        public bool isSmall = true;
+        private bool isSmall = true;
         public bool useSmallSpeed = true;
         public float baseSpeed, baseJump, baseSize, baseGrab;
         private bool hasSetStats = false;
-        public float spawnTimer = 1.5f;
+        public PlayerControllerB playerScript;
+        public Rigidbody rb;
 
         public void ChangeSize()
         {
             GameObject player = this.gameObject;
 
-            PlayerControllerB playerScript = player.GetComponent<PlayerControllerB>();
+            playerScript = player.GetComponent<PlayerControllerB>();
 
-            isSmall = !isSmall;
-            UpdateSize();
+            IsSmall(!isSmall);
 
         }
 
         public void IsSmall(bool _isSmall)
         {
             isSmall = _isSmall;
+        }
 
-            UpdateSize();
+        public bool GetSize()
+        {
+            return isSmall;
         }
 
         public void UpdateSize()
         {
             GameObject player = this.gameObject;
 
-            PlayerControllerB playerScript = player.GetComponent<PlayerControllerB>();
+            playerScript = player.GetComponent<PlayerControllerB>();
 
-            Rigidbody rb = player.GetComponent<Rigidbody>();
 
-            if (spawnTimer > 0) { return; }
+             rb = player.GetComponent<Rigidbody>();
 
             if (!hasSetStats)
             {
