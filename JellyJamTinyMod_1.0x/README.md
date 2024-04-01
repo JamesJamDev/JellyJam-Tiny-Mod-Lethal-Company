@@ -1,4 +1,4 @@
-# Tiny Company 1.0.2x
+# Tiny Company 1.0.3x
 A mod that adds extra challenge to Lethal Company by making the players tiny, changing how they interact with the world and enemies.
 
 # Basic Features
@@ -14,6 +14,10 @@ A mod that adds extra challenge to Lethal Company by making the players tiny, ch
 - /Speed
     - Toggles between using the Tiny values for Speed, Jump, and reach distance and the normal player ones
     - Can be used in any state, but only impacts the tiny mode
+- /Stuck
+    - Can only be used in the ship
+    - Teleports you to the spawn point
+    - Used for when you (re)spawn in and are stuck
 
 # IMPORTANT
 The mod is not optimized at all as this is the first time I've ever made a mod.

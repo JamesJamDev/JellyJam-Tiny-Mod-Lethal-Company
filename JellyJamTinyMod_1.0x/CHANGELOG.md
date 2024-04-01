@@ -1,4 +1,11 @@
 # CHANGELOG
+Version 1.0.3
+- Fixed non-host players not being able to change size
+- /Stuck was added
+    - Only works in the ship
+    - Is used for when you spawn in the floor and cannot move
+- Reverted player being bigger when first spawning in to prevent being stuck (above change replaces it) as it was causing issues
+
 Version 1.0.2
 - Added a command "/speed" that allows you to use the normal player values like speed, jumpheight and reach distance while tiny
 - Optimized a few parts of the code
@@ -12,7 +19,7 @@ Version 1.0:
 - Running now takes stamina and the new walk speed is around the same speed as the old running speed
 - Player size changed to 33%
 - Adjusted gravity to be 25% less effective on the small players
-- When spawning in, the player is normal sized for a few seconds, this is to help combat getting stuck when spawning back in (Note: this may not have fixed it entirely but it should help)
+- (REVERTED IN 1.0.3) When spawning in, the player is normal sized for a few seconds, this is to help combat getting stuck when spawning back in (Note: this may not have fixed it entirely but it should help)
 
 Pre Release:
 - Changed Player size to 20%
