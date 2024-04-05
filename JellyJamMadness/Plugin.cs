@@ -14,7 +14,7 @@ namespace JellyJamMadness
     {
         private const string modGUID = "JellyJam.TinyMod";
         private const string modName = "JellyJamTinyMod";
-        private const string modVersion = "1.0.2.0";
+        private const string modVersion = "1.0.3.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
